@@ -1,0 +1,21 @@
+FROM centos:6.6
+
+RUN yum install -y zlib-devel libffi-devel perl gcc
+
+ADD openssl-1.1.1f.tar.gz /tmp
+RUN cd /tmp/openssl-1.1.1f && \
+    ./config --prefix=/usr/local/openssl && \
+    make && make install
+
+RUN ln -s /usr/local/openssl/include/openssl /usr/include/openssl  && \
+    ln -s /usr/local/openssl/lib/libssl.so.1.1 /usr/local/lib64/libssl.so && \
+    rm -f /usr/bin/openssl && ln -s /usr/local/openssl/bin/openssl /usr/bin/openssl && \
+    echo "/usr/local/openssl/lib" >> /etc/ld.so.conf && \
+    ldconfig -v && \
+    openssl version
+
+ADD Python-3.7.3.tgz /tmp
+
+RUN cd /tmp/Python-3.7.3 && \
+    ./configure --with-openssl=/usr/local/openssl --prefix=/apps/svr/Python-3.7.3 && make install
+RUN export PATH=$PATH:/apps/svr/Python-3.7.3/bin && pip3 list && pip3 install threadpool
